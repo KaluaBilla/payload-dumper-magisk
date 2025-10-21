@@ -1,6 +1,6 @@
 {
-    "versionCode": ,
-    "version": "",
-    "zipUrl": "",
-    "changelog": ""
+  "versionCode": 2,
+  "version": "1.1",
+  "zipUrl": "https://github.com/KaluaBilla/paylod-dumper-magisk/releases/download/v1.1/payload-dumper-1.1.zip",
+  "changelog": "https://raw.githubusercontent.com/KaluaBilla/paylod-dumper-magisk/main/changelog.md"
 }
