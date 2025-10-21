@@ -16,39 +16,41 @@ mkdir -p "$DEST_DIR" || {
 }
 
 # options
-OPTIONS="rust go both"
-# start index 0 -> rust
 idx=0
-sel="${OPTIONS%% *}" # rust
+sel="rust"
 
 # show current selection
 show_sel() {
   case "$sel" in
-    rust) ui_print "- Selected: Rust binary only" ;;
-    go)   ui_print "- Selected: Go binary only" ;;
-    both) ui_print "- Selected: Both (payload_dumper_rust + payload_dumper_go)" ;;
-    *)    ui_print "- Selected: $sel" ;;
+    rust) ui_print "- Rust" ;;
+    go)   ui_print "- Go" ;;
+    both) ui_print "- Both" ;;
   esac
-  ui_print "- Press VOLUME UP to confirm, VOLUME DOWN to cycle. Waiting up to ${timeout}s..."
 }
 
-# this logic is taken from 
-# https://github.com/Magisk-Modules-Alt-Repo/YetAnotherBootloopProtector/blob/793105cff8ccf0e3a251cca74a59e1e89a3c9213/customize.sh#L19
-timeout=10
+timeout=60
+ui_print " "
+ui_print "- Press VOLUME UP to select, VOLUME DOWN to switch"
+ui_print " "
 show_sel
+
 while true; do
-  event=$(timeout ${timeout} getevent -qlc 1 2>/dev/null)
+  event=$(timeout ${timeout} getevent -lc 1 2>/dev/null)
   exitcode=$?
+  
   if [ "$exitcode" -eq 124 ] || [ "$exitcode" -eq 143 ]; then
-    ui_print "No keypress detected within ${timeout}s. Defaulting to 'both'."
+    ui_print " "
+    ui_print "- No keypress detected. Defaulting to 'both'."
     sel="both"
     break
   fi
 
-  if echo "$event" | grep -q "KEY_VOLUMEUP"; then
-    ui_print "Volume UP detected: confirming selection."
+  # Only process KEY_DOWN events (value 1), ignore KEY_UP events (value 0)
+  if echo "$event" | grep -q "KEY_VOLUMEUP.*DOWN"; then
+    ui_print " "
+    ui_print "- Confirmed!"
     break
-  elif echo "$event" | grep -q "KEY_VOLUMEDOWN"; then
+  elif echo "$event" | grep -q "KEY_VOLUMEDOWN.*DOWN"; then
     # cycle selection
     idx=$(( (idx + 1) % 3 ))
     case $idx in
@@ -57,12 +59,10 @@ while true; do
       2) sel="both" ;;
     esac
     show_sel
-    # continue waiting
-  else
-    # unexpected event ignore and continue
-    :
   fi
 done
+
+ui_print " "
 
 # perform installation based on selection
 install_one() {
@@ -72,8 +72,8 @@ install_one() {
     ui_print "- !! Source missing: $src"
     return 1
   fi
-  cp -f "$src" "$dst" || { ui_print "!! Failed to copy $src -> $dst"; return 1; }
-  chmod 0755 "$dst" || ui_print "!! chmod failed on $dst"
+  cp -f "$src" "$dst" || { ui_print "- !! Failed to copy $src -> $dst"; return 1; }
+  chmod 0755 "$dst" || ui_print "- !! chmod failed on $dst"
   chown 0:0 "$dst" 2>/dev/null || true
   ui_print "- Installed: $dst"
   return 0
@@ -102,7 +102,7 @@ case "$sel" in
     fi
     ;;
   *)
-    ui_print "!! Unknown selection: $sel"
+    ui_print "- !! Unknown selection: $sel"
     exit 1
     ;;
 esac
@@ -110,4 +110,4 @@ esac
 # final perms for bin dir
 chmod 0755 "$DEST_DIR" 2>/dev/null || true
 rm -rf "$MODPATH/bins"
-ui_print "- Done"
+ui_print " "
