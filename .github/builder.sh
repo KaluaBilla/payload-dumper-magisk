@@ -150,12 +150,12 @@ build_payload_dumper_rust() {
   cat > .cargo/config.toml <<EOF
 [target.${RUST_TARGET}]
 ar = "${ANDROID_NDK_ROOT}/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-ar"
-linker = "${ANDROID_NDK_ROOT}/toolchains/llvm/prebuilt/linux-x86_64/bin/${TARGET}${API}-clang"
+linker = "${ANDROID_NDK_ROOT}/toolchains/llvm/prebuilt/linux-x86_64/bin/${TARGET}21-clang"
 EOF
   export RUSTFLAGS="-C target-feature=+crt-static -C link-arg=-static"
   RUST_TARGET_UNDERSCORE="${RUST_TARGET//-/_}"
-  export CC_${RUST_TARGET_UNDERSCORE}="${ANDROID_NDK_ROOT}/toolchains/llvm/prebuilt/linux-x86_64/bin/${TARGET}${API}-clang"
-  export CXX_${RUST_TARGET_UNDERSCORE}="${ANDROID_NDK_ROOT}/toolchains/llvm/prebuilt/linux-x86_64/bin/${TARGET}${API}-clang++"
+  export CC_${RUST_TARGET_UNDERSCORE}="${ANDROID_NDK_ROOT}/toolchains/llvm/prebuilt/linux-x86_64/bin/${TARGET}21-clang"
+  export CXX_${RUST_TARGET_UNDERSCORE}="${ANDROID_NDK_ROOT}/toolchains/llvm/prebuilt/linux-x86_64/bin/${TARGET}21-clang++"
   cargo build --release --target "$RUST_TARGET" --all-features
   cp "target/${RUST_TARGET}/release/payload_dumper" "../${RUST_OUTPUT}"
   popd > /dev/null
