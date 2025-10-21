@@ -55,22 +55,23 @@ jobs:
         run: |
          NDK_TOOLCHAIN="${{ steps.setup-ndk.outputs.ndk-path }}/toolchains/llvm/prebuilt/linux-x86_64/bin"
          cd "$NDK_TOOLCHAIN"
-         ln -sf aarch64-linux-android21-clang aarch64-linux-android-clang
-         ln -sf aarch64-linux-android21-clang++ aarch64-linux-android-clang++
-         ln -sf armv7a-linux-androideabi21-clang armv7a-linux-androideabi-clang
-         ln -sf armv7a-linux-androideabi21-clang++ armv7a-linux-androideabi-clang++
-         ln -sf arm-linux-androideabi21-clang arm-linux-androideabi-clang
-         ln -sf arm-linux-androideabi21-clang++ arm-linux-androideabi-clang++
-         ln -sf x86_64-linux-android21-clang x86_64-linux-android-clang
-         ln -sf x86_64-linux-android21-clang++ x86_64-linux-android-clang++
-         ln -sf i686-linux-android21-clang i686-linux-android-clang
-         ln -sf i686-linux-android21-clang++ i686-linux-android-clang++       
+         ln -sf aarch64-linux-android24-clang aarch64-linux-android-clang
+         ln -sf aarch64-linux-android24-clang++ aarch64-linux-android-clang++
+         ln -sf armv7a-linux-androideabi24-clang armv7a-linux-androideabi-clang
+         ln -sf armv7a-linux-androideabi24-clang++ armv7a-linux-androideabi-clang++
+         ln -sf arm-linux-androideabi24-clang arm-linux-androideabi-clang
+         ln -sf arm-linux-androideabi24-clang++ arm-linux-androideabi-clang++
+         ln -sf x86_64-linux-android24-clang x86_64-linux-android-clang
+         ln -sf x86_64-linux-android24-clang++ x86_64-linux-android-clang++
+         ln -sf i686-linux-android24-clang i686-linux-android-clang
+         ln -sf i686-linux-android24-clang++ i686-linux-android-clang++       
 
       - name: Run build script
         run: bash .github/build.sh
         env:
           ANDROID_NDK_HOME: ${{ env.ANDROID_NDK_HOME }}
           ANDROID_NDK_ROOT: ${{ env.ANDROID_NDK_ROOT }}
+          API: 24
 
       - name: Bump version in module.prop
         id: bump_version
