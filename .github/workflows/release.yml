@@ -19,7 +19,7 @@ jobs:
       - name: Install tools
         run: |
           sudo apt-get update
-          sudo apt-get install -y wget autopoint ninja-build make autoconf automake libtool pkg-config texinfo gettext gperf bison flex python3 python3-pip python3-venv pipx libtool-bin
+          sudo apt-get install -y wget curl autopoint ninja-build make autoconf automake libtool pkg-config texinfo gettext gperf bison flex python3 python3-pip python3-venv pipx libtool-bin
 
       - name: Install meson
         run: |
