@@ -8,10 +8,8 @@ REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 # ------------------ Configurable variables ------------------
 GOARCH=${GOARCH:-arm64}
 API=${API:-21}
-PREFIX="${SCRIPT_DIR}/android"
+PREFIX="${SCRIPT_DIR}/android-${GOARCH}"
 export PKG_CONFIG_ALLOW_CROSS=1
-export PATH=
-
 case "$GOARCH" in
     arm64) ABI="arm64-v8a" ;;
     arm)   ABI="armeabi-v7a" ;;
@@ -74,7 +72,7 @@ build_liblzma() {
   fi
 
   cd "$SCRIPT_DIR"
-  [ -f "${XZ_TAR}" ] || wget "${XZ_URL}"
+  [ -f "${XZ_TAR}" ] || curl -L -o "${XZ_TAR}" "${XZ_URL}"
   tar -xf "${XZ_TAR}"
   mkdir -p "xz-${XZ_VERSION}/build-android"
   pushd "xz-${XZ_VERSION}/build-android" > /dev/null
