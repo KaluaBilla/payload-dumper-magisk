@@ -88,6 +88,7 @@ build_liblzma() {
 build_zstd() {
   cd "$SCRIPT_DIR"
   [ -d "${ZSTD_DIR}" ] || git clone --depth 1 "${ZSTD_REPO}" "${ZSTD_DIR}"
+  rm -rf "${ZSTD_BUILD_DIR}"
   mkdir -p "${ZSTD_BUILD_DIR}"
 
   # write meson cross file
