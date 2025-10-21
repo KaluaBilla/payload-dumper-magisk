@@ -1,12 +1,12 @@
 # Changelog
 
-## Version 1.1 (Build 2)
+## Version 1.2 (Build 3)
 
-**Release Date:** 2025-10-21 18:38:39
+**Release Date:** 2025-10-21 18:59:08
 
 **Changes:**
-- Automated release from GitHub Actions workflow run #8
-- Built from commit: c41a1c4d5d7ce293fe53d4d09672e03a24bf5948
+- Automated release from GitHub Actions workflow run #9
+- Built from commit: c9a947244f4404636b39c8979837772bc80c1c23
 
 ---
 
