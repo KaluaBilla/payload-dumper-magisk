@@ -70,10 +70,10 @@ build_liblzma() {
     echo "liblzma.a already exists, skipping build"
     return
   fi
-
   cd "$SCRIPT_DIR"
   [ -f "${XZ_TAR}" ] || curl -L -o "${XZ_TAR}" "${XZ_URL}"
   tar -xf "${XZ_TAR}"
+  rm -rf "xz-${XZ_VERSION}/build-android"
   mkdir -p "xz-${XZ_VERSION}/build-android"
   pushd "xz-${XZ_VERSION}/build-android" > /dev/null
   ../configure --host="${TARGET}" --prefix="${PREFIX}" \
