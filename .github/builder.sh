@@ -6,10 +6,11 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 
 # ------------------ Configurable variables ------------------
-ANDROID_NDK_ROOT=${ANDROID_NDK_ROOT:-/opt/android-ndk-r29}
 GOARCH=${GOARCH:-arm64}
 API=${API:-21}
 PREFIX="${SCRIPT_DIR}/android"
+export PKG_CONFIG_ALLOW_CROSS=1
+export PATH=
 
 case "$GOARCH" in
     arm64) ABI="arm64-v8a" ;;
@@ -42,6 +43,7 @@ if [[ -z "$ANDROID_NDK_ROOT" ]]; then
         export ANDROID_NDK_ROOT=$ANDROID_NDK_HOME
     fi
 fi
+export PATH=$ANDROID_NDK_ROOT/toolchains/llvm/prebuilt/linux-x86_64/bin:$PATH
 
 # ------------------ Determine target triple for NDK ------------------
 case "$GOARCH" in
@@ -152,6 +154,8 @@ ar = "${ANDROID_NDK_ROOT}/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-ar"
 linker = "${ANDROID_NDK_ROOT}/toolchains/llvm/prebuilt/linux-x86_64/bin/${TARGET}${API}-clang"
 EOF
   export RUSTFLAGS="-C target-feature=+crt-static -C link-arg=-static"
+  export CC_${RUST_TARGET}="${ANDROID_NDK_ROOT}/toolchains/llvm/prebuilt/linux-x86_64/bin/${TARGET}${API}-clang"
+  export CXX_${RUST_TARGET}="${ANDROID_NDK_ROOT}/toolchains/llvm/prebuilt/linux-x86_64/bin/${TARGET}${API}-clang++"
   cargo build --release --target "$RUST_TARGET" --all-features
   cp "target/${RUST_TARGET}/release/payload_dumper" "../${RUST_OUTPUT}"
   popd > /dev/null
@@ -163,9 +167,11 @@ copy_bins() {
   mkdir -p "$REPO_ROOT/bins/rust"
   if [ -f "payload-dumper-go/${OUTPUT}" ]; then
       cp "payload-dumper-go/${OUTPUT}" "$REPO_ROOT/bins/go/"
+      $STRIP "payload-dumper-go/${OUTPUT}"
       echo "Copied Go binary to $REPO_ROOT/bins/go/${OUTPUT}"
   fi
   if [ -f "payload-dumper-rust/${RUST_OUTPUT}" ]; then
+      $STRIP "payload-dumper-rust/${RUST_OUTPUT}"
       cp "payload-dumper-rust/${RUST_OUTPUT}" "$REPO_ROOT/bins/rust/"
       echo "Copied Rust binary to $REPO_ROOT/bins/rust/${RUST_OUTPUT}"
   fi
