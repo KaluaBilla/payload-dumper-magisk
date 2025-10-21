@@ -8,6 +8,6 @@ for GOARCH in "${ARCHS[@]}"; do
 done
 echo "Builds completed. Cleaning up..."
 shopt -s extglob
-cd "$SCRIPT_DIR"
+cd "$CURR_DIR"
 rm -rf !(*.sh|workflows)
 echo "Cleanup done."
