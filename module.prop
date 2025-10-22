@@ -1,7 +1,7 @@
 id=payload_dumper
 name=Payload Dumper
-version=1.2
-versionCode=3
+version=1.3
+versionCode=4
 author=KaluaBilla
 description=This Module Lets you install payload dumper on your rooted Android device
 updateJson=https://raw.githubusercontent.com/KaluaBilla/payload-dumper-magisk/main/updateJson
