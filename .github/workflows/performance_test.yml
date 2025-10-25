@@ -1,0 +1,125 @@
+name: Payload Dumper Performance Comparison
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        dumper: [payload-dumper-go, payload-dumper-rust]
+        input_type: [zip, raw]
+    
+    name: ${{ matrix.dumper }} - ${{ matrix.input_type }}
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install hyperfine
+        run: sudo apt update && sudo apt install -y hyperfine
+
+      - name: Set dumper variables
+        id: vars
+        run: |
+          if [ "${{ matrix.dumper }}" == "payload-dumper-go" ]; then
+            echo "url=https://github.com/ssut/payload-dumper-go/releases/download/1.3.0/payload-dumper-go_1.3.0_linux_amd64.tar.gz" >> $GITHUB_OUTPUT
+            echo "binary=payload-dumper-go" >> $GITHUB_OUTPUT
+            echo "archive_type=tar.gz" >> $GITHUB_OUTPUT
+          else
+            echo "url=https://github.com/rhythmcache/payload-dumper-rust/releases/download/payload-dumper-rust-v0.7.4/payload_dumper-linux-x86_64.zip" >> $GITHUB_OUTPUT
+            echo "binary=payload_dumper" >> $GITHUB_OUTPUT
+            echo "archive_type=zip" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Download and extract dumper
+        run: |
+          mkdir -p dumper
+          cd dumper
+          wget ${{ steps.vars.outputs.url }} -O dumper_archive
+          
+          if [ "${{ steps.vars.outputs.archive_type }}" == "tar.gz" ]; then
+            tar -xzf dumper_archive
+          else
+            unzip dumper_archive
+          fi
+          
+          chmod +x ${{ steps.vars.outputs.binary }}
+          echo "$(pwd)" >> $GITHUB_PATH
+
+      - name: Download OTA package
+        run: |
+          mkdir -p ota
+          cd ota
+          wget https://dl.google.com/dl/android/aosp/rango-ota-bd3a.250808.001-f5927106.zip -O ota.zip
+
+      - name: Extract payload.bin (for raw input test)
+        if: matrix.input_type == 'raw'
+        run: |
+          cd ota
+          unzip -j ota.zip payload.bin
+
+      - name: Run benchmark - ZIP input
+        if: matrix.input_type == 'zip'
+        run: |
+          mkdir -p output_zip
+          cd ota
+          hyperfine \
+            --warmup 1 \
+            --runs 3 \
+            --export-json ../benchmark_${{ matrix.dumper }}_zip.json \
+            --export-markdown ../benchmark_${{ matrix.dumper }}_zip.md \
+            "${{ steps.vars.outputs.binary }} -o ../output_zip ota.zip"
+
+      - name: Run benchmark - Raw payload.bin
+        if: matrix.input_type == 'raw'
+        run: |
+          mkdir -p output_raw
+          cd ota
+          hyperfine \
+            --warmup 1 \
+            --runs 3 \
+            --export-json ../benchmark_${{ matrix.dumper }}_raw.json \
+            --export-markdown ../benchmark_${{ matrix.dumper }}_raw.md \
+            "${{ steps.vars.outputs.binary }} -o ../output_raw payload.bin"
+
+      - name: Upload benchmark results
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-${{ matrix.dumper }}-${{ matrix.input_type }}
+          path: |
+            benchmark_*.json
+            benchmark_*.md
+
+  summarize:
+    needs: benchmark
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: results
+
+      - name: Create summary
+        run: |
+          echo "# Payload Dumper Performance Comparison" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          for dir in results/*/; do
+            echo "## $(basename $dir)" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            
+            if [ -f "$dir"/*.md ]; then
+              cat "$dir"/*.md >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+            fi
+          done
+
+      - name: Upload combined results
+        uses: actions/upload-artifact@v4
+        with:
+          name: all-benchmark-results
+          path: results/
