@@ -16,7 +16,7 @@ jobs:
         uses: actions/checkout@v4
       
       - name: Install hyperfine
-        run: sudo apt update && sudo apt install -y hyperfine
+        run: sudo apt install -y hyperfine
       
       - name: Set dumper variables (Go)
         if: matrix.dumper == 'payload-dumper-go'
