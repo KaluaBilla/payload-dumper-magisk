@@ -9,10 +9,10 @@ This module packages two payload dumper implementations:
 1. **[payload-dumper-rust](https://github.com/rhythmcache/payload-dumper-rust)** - Rust implementation
    - Direct extraction from URL
    - Metadata extraction support
-   - Fast and memory efficient
 
 2. **[payload-dumper-go](https://github.com/ssut/payload-dumper-go)** - Go implementation
    - Reliable and well-tested
+   - Fast and memory efficient
 
 ## Installation
 
