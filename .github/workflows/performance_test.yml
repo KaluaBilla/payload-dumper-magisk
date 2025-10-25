@@ -2,8 +2,6 @@ name: Payload Dumper Performance Comparison
 
 on:
   workflow_dispatch:
-  push:
-    branches: [ main ]
 
 jobs:
   benchmark:
