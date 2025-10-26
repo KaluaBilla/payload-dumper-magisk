@@ -44,7 +44,7 @@ jobs:
           ref: main
           path: payload-dumper-rust
       
-      - name: Install Rust nightly toolchain
+      - name: Install Rust toolchain
         if: matrix.dumper == 'payload-dumper-rust'
         uses: dtolnay/rust-toolchain@stable
       
