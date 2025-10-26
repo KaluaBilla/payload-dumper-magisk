@@ -46,14 +46,13 @@ jobs:
       
       - name: Install Rust nightly toolchain
         if: matrix.dumper == 'payload-dumper-rust'
-        uses: dtolnay/rust-toolchain@nightly
+        uses: dtolnay/rust-toolchain@stable
       
       - name: Build Rust dumper (release)
         if: matrix.dumper == 'payload-dumper-rust'
         run: |
           cd payload-dumper-rust
-          rustup override set nightly
-          cargo +nightly build --release
+          cargo build --release
           mkdir -p ../dumper
           cp target/release/payload_dumper ../dumper/
           chmod +x ../dumper/payload_dumper
