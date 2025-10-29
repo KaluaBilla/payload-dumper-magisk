@@ -68,9 +68,9 @@ jobs:
           mkdir -p output_zip
           cd ota
           if [ "${{ matrix.dumper }}" == "payload-dumper-rust" ]; then
-            cmd="${{ steps.vars.outputs.binary }} --no-verify -o ../output_zip ota.zip"
+            cmd="${{ steps.vars.outputs.binary }} --threads 4 --no-verify -o ../output_zip ota.zip"
           else
-            cmd="${{ steps.vars.outputs.binary }} -o ../output_zip ota.zip"
+            cmd="${{ steps.vars.outputs.binary }} --concurrency 4 -o ../output_zip ota.zip"
           fi
           hyperfine \
             --warmup 1 \
@@ -85,9 +85,9 @@ jobs:
           mkdir -p output_raw
           cd ota
           if [ "${{ matrix.dumper }}" == "payload-dumper-rust" ]; then
-            cmd="${{ steps.vars.outputs.binary }} --no-verify -o ../output_raw payload.bin"
+            cmd="${{ steps.vars.outputs.binary }} --threads 4 --no-verify -o ../output_raw payload.bin"
           else
-            cmd="${{ steps.vars.outputs.binary }} -o ../output_raw payload.bin"
+            cmd="${{ steps.vars.outputs.binary }} --concurrency 4 -o ../output_raw payload.bin"
           fi
           hyperfine \
             --warmup 1 \
