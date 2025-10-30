@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        dumper: [payload-dumper-go, payload-dumper-rust]
+        dumper: [payload-dumper-go, payload-dumper-rust, payload-dumper-ungo]
         input_type: [zip, raw]
     
     name: ${{ matrix.dumper }} - ${{ matrix.input_type }}
@@ -29,9 +29,13 @@ jobs:
             echo "url=https://github.com/ssut/payload-dumper-go/releases/download/1.3.0/payload-dumper-go_1.3.0_linux_amd64.tar.gz" >> $GITHUB_OUTPUT
             echo "binary=payload-dumper-go" >> $GITHUB_OUTPUT
             echo "archive_type=tar.gz" >> $GITHUB_OUTPUT
-          else
+          elif [ "${{ matrix.dumper }}" == "payload-dumper-rust" ]; then
             echo "url=https://github.com/KaluaBilla/payload-dumper-rust/releases/download/payload-dumper-rust-v0.7.4/payload_dumper-linux-x86_64.zip" >> $GITHUB_OUTPUT
             echo "binary=payload_dumper" >> $GITHUB_OUTPUT
+            echo "archive_type=zip" >> $GITHUB_OUTPUT
+          else
+            echo "url=https://github.com/KaluaBilla/payload-dumper-ungo/releases/download/build-20251030-065155-1de1b4f/payload-dumper-ungo-linux-static-x86_64.zip" >> $GITHUB_OUTPUT
+            echo "binary=payload-dumper-ungo" >> $GITHUB_OUTPUT
             echo "archive_type=zip" >> $GITHUB_OUTPUT
           fi
 
