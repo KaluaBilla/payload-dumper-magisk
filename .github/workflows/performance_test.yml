@@ -2,8 +2,6 @@ name: Payload Dumper Performance Comparison
 
 on:
   workflow_dispatch:
-  push:
-    branches: [ main ]
 
 jobs:
   benchmark:
@@ -19,8 +17,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
       - name: Install hyperfine
-        run: sudo apt update && sudo apt install -y hyperfine
+        run: cargo install hyperfine
 
       - name: Set dumper variables
         id: vars
@@ -79,6 +80,7 @@ jobs:
           hyperfine \
             --warmup 1 \
             --runs 3 \
+            --show-output \
             --export-json ../benchmark_${{ matrix.dumper }}_zip.json \
             --export-markdown ../benchmark_${{ matrix.dumper }}_zip.md \
             "$cmd"
@@ -96,6 +98,7 @@ jobs:
           hyperfine \
             --warmup 1 \
             --runs 3 \
+            --show-output \
             --export-json ../benchmark_${{ matrix.dumper }}_raw.json \
             --export-markdown ../benchmark_${{ matrix.dumper }}_raw.md \
             "$cmd"
