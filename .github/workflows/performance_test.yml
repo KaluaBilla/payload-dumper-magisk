@@ -35,7 +35,7 @@ jobs:
             echo "binary=payload_dumper" >> $GITHUB_OUTPUT
             echo "archive_type=zip" >> $GITHUB_OUTPUT
           else
-            echo "url=https://github.com/KaluaBilla/payload-dumper-ungo/releases/download/build-20251030-065155-1de1b4f/payload-dumper-ungo-linux-static-x86_64.zip" >> $GITHUB_OUTPUT
+            echo "url=https://github.com/KaluaBilla/payload-dumper-ungo/releases/download/build-20251030-152156-e064d77/payload-dumper-ungo-linux-static-x86_64.zip" >> $GITHUB_OUTPUT
             echo "binary=payload-dumper-ungo" >> $GITHUB_OUTPUT
             echo "archive_type=zip" >> $GITHUB_OUTPUT
           fi
