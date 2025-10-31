@@ -59,7 +59,7 @@ jobs:
         run: |
           mkdir -p ota
           cd ota
-          wget https://dl.google.com/dl/android/aosp/rango-ota-bd3a.250808.001-f5927106.zip -O ota.zip
+          wget https://bkt-sgp-miui-ota-update-alisgp.oss-ap-southeast-1.aliyuncs.com/OS1.0.10.0.TKCCNXM/miui_VEUX_OS1.0.10.0.TKCCNXM_ab3d587cf1_13.0.zip -O ota.zip
 
       - name: Extract payload.bin (for raw input test)
         if: matrix.input_type == 'raw'
