@@ -5,13 +5,14 @@ on:
 
 jobs:
   benchmark:
-    runs-on: ubuntu-latest
     strategy:
       matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
         dumper: [payload-dumper-go, payload-dumper-rust, payload-dumper-ungo]
         input_type: [zip, raw]
     
-    name: ${{ matrix.dumper }} - ${{ matrix.input_type }}
+    runs-on: ${{ matrix.os }}
+    name: ${{ matrix.os }} - ${{ matrix.dumper }} - ${{ matrix.input_type }}
     
     steps:
       - name: Checkout repository
@@ -25,22 +26,60 @@ jobs:
 
       - name: Set dumper variables
         id: vars
+        shell: bash
         run: |
-          if [ "${{ matrix.dumper }}" == "payload-dumper-go" ]; then
-            echo "url=https://github.com/ssut/payload-dumper-go/releases/download/1.3.0/payload-dumper-go_1.3.0_linux_amd64.tar.gz" >> $GITHUB_OUTPUT
-            echo "binary=payload-dumper-go" >> $GITHUB_OUTPUT
+          OS="${{ matrix.os }}"
+          DUMPER="${{ matrix.dumper }}"
+          
+          # Determine OS type
+          if [[ "$OS" == "ubuntu-latest" ]]; then
+            OS_TYPE="linux"
+            BINARY_EXT=""
+          elif [[ "$OS" == "windows-latest" ]]; then
+            OS_TYPE="windows"
+            BINARY_EXT=".exe"
+          elif [[ "$OS" == "macos-latest" ]]; then
+            OS_TYPE="macos"
+            BINARY_EXT=""
+          fi
+          
+          # Set URLs and binary names based on dumper and OS
+          if [ "$DUMPER" == "payload-dumper-go" ]; then
+            if [ "$OS_TYPE" == "linux" ]; then
+              echo "url=https://github.com/ssut/payload-dumper-go/releases/download/1.3.0/payload-dumper-go_1.3.0_linux_amd64.tar.gz" >> $GITHUB_OUTPUT
+            elif [ "$OS_TYPE" == "windows" ]; then
+              echo "url=https://github.com/ssut/payload-dumper-go/releases/download/1.3.0/payload-dumper-go_1.3.0_windows_amd64.tar.gz" >> $GITHUB_OUTPUT
+            elif [ "$OS_TYPE" == "macos" ]; then
+              echo "url=https://github.com/ssut/payload-dumper-go/releases/download/1.3.0/payload-dumper-go_1.3.0_darwin_arm64.tar.gz" >> $GITHUB_OUTPUT
+            fi
+            echo "binary=payload-dumper-go${BINARY_EXT}" >> $GITHUB_OUTPUT
             echo "archive_type=tar.gz" >> $GITHUB_OUTPUT
-          elif [ "${{ matrix.dumper }}" == "payload-dumper-rust" ]; then
-            echo "url=https://github.com/KaluaBilla/payload-dumper-rust/releases/download/payload-dumper-rust-v0.7.4/payload_dumper-linux-x86_64.zip" >> $GITHUB_OUTPUT
-            echo "binary=payload_dumper" >> $GITHUB_OUTPUT
+            
+          elif [ "$DUMPER" == "payload-dumper-rust" ]; then
+            if [ "$OS_TYPE" == "linux" ]; then
+              echo "url=https://github.com/KaluaBilla/payload-dumper-rust/releases/download/payload-dumper-rust-v0.7.4/payload_dumper-linux-x86_64.zip" >> $GITHUB_OUTPUT
+            elif [ "$OS_TYPE" == "windows" ]; then
+              echo "url=https://github.com/KaluaBilla/payload-dumper-rust/releases/download/payload-dumper-rust-v0.7.4/payload_dumper-windows-x86_64.zip" >> $GITHUB_OUTPUT
+            elif [ "$OS_TYPE" == "macos" ]; then
+              echo "url=https://github.com/KaluaBilla/payload-dumper-rust/releases/download/payload-dumper-rust-v0.7.4/payload_dumper-macos-aarch64.zip" >> $GITHUB_OUTPUT
+            fi
+            echo "binary=payload_dumper${BINARY_EXT}" >> $GITHUB_OUTPUT
             echo "archive_type=zip" >> $GITHUB_OUTPUT
-          else
-            echo "url=https://github.com/KaluaBilla/payload-dumper-ungo/releases/download/build-20251030-152156-e064d77/payload-dumper-ungo-linux-static-x86_64.zip" >> $GITHUB_OUTPUT
-            echo "binary=payload-dumper-ungo" >> $GITHUB_OUTPUT
+            
+          else  # payload-dumper-ungo
+            if [ "$OS_TYPE" == "linux" ]; then
+              echo "url=https://github.com/KaluaBilla/payload-dumper-ungo/releases/download/build-20251031-153402-21a79d7/payload-dumper-ungo-linux-static-x86_64.zip" >> $GITHUB_OUTPUT
+            elif [ "$OS_TYPE" == "windows" ]; then
+              echo "url=https://github.com/KaluaBilla/payload-dumper-ungo/releases/download/build-20251031-153402-21a79d7/payload-dumper-ungo-windows-x64.zip" >> $GITHUB_OUTPUT
+            elif [ "$OS_TYPE" == "macos" ]; then
+              echo "url=https://github.com/KaluaBilla/payload-dumper-ungo/releases/download/build-20251031-153402-21a79d7/payload-dumper-ungo-macos-arm64.zip" >> $GITHUB_OUTPUT
+            fi
+            echo "binary=payload-dumper-ungo${BINARY_EXT}" >> $GITHUB_OUTPUT
             echo "archive_type=zip" >> $GITHUB_OUTPUT
           fi
 
-      - name: Download and extract dumper
+      - name: Download and extract dumper (Unix)
+        if: runner.os != 'Windows'
         run: |
           mkdir -p dumper
           cd dumper
@@ -55,20 +94,47 @@ jobs:
           chmod +x ${{ steps.vars.outputs.binary }}
           echo "$(pwd)" >> $GITHUB_PATH
 
-      - name: Download OTA package
+      - name: Download and extract dumper (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path dumper
+          Set-Location dumper
+          Invoke-WebRequest -Uri "${{ steps.vars.outputs.url }}" -OutFile "dumper_archive"
+          
+          if ("${{ steps.vars.outputs.archive_type }}" -eq "tar.gz") {
+            tar -xzf dumper_archive
+          } else {
+            Expand-Archive -Path dumper_archive -DestinationPath .
+          }
+          
+          echo "$PWD" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+
+      - name: Download OTA package (Unix)
+        if: runner.os != 'Windows'
         run: |
           mkdir -p ota
           cd ota
           wget https://bkt-sgp-miui-ota-update-alisgp.oss-ap-southeast-1.aliyuncs.com/OS1.0.10.0.TKCCNXM/miui_VEUX_OS1.0.10.0.TKCCNXM_ab3d587cf1_13.0.zip -O ota.zip
 
+      - name: Download OTA package (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path ota
+          Set-Location ota
+          Invoke-WebRequest -Uri "https://bkt-sgp-miui-ota-update-alisgp.oss-ap-southeast-1.aliyuncs.com/OS1.0.10.0.TKCCNXM/miui_VEUX_OS1.0.10.0.TKCCNXM_ab3d587cf1_13.0.zip" -OutFile "ota.zip"
+
       - name: Extract payload.bin (for raw input test)
         if: matrix.input_type == 'raw'
+        shell: bash
         run: |
           cd ota
           unzip -j ota.zip payload.bin
 
       - name: Run benchmark - ZIP input
         if: matrix.input_type == 'zip'
+        shell: bash
         run: |
           mkdir -p output_zip
           cd ota
@@ -81,12 +147,13 @@ jobs:
             --warmup 1 \
             --runs 3 \
             --show-output \
-            --export-json ../benchmark_${{ matrix.dumper }}_zip.json \
-            --export-markdown ../benchmark_${{ matrix.dumper }}_zip.md \
+            --export-json ../benchmark_${{ matrix.os }}_${{ matrix.dumper }}_zip.json \
+            --export-markdown ../benchmark_${{ matrix.os }}_${{ matrix.dumper }}_zip.md \
             "$cmd"
 
       - name: Run benchmark - Raw payload.bin
         if: matrix.input_type == 'raw'
+        shell: bash
         run: |
           mkdir -p output_raw
           cd ota
@@ -99,14 +166,14 @@ jobs:
             --warmup 1 \
             --runs 3 \
             --show-output \
-            --export-json ../benchmark_${{ matrix.dumper }}_raw.json \
-            --export-markdown ../benchmark_${{ matrix.dumper }}_raw.md \
+            --export-json ../benchmark_${{ matrix.os }}_${{ matrix.dumper }}_raw.json \
+            --export-markdown ../benchmark_${{ matrix.os }}_${{ matrix.dumper }}_raw.md \
             "$cmd"
 
       - name: Upload benchmark results
         uses: actions/upload-artifact@v4
         with:
-          name: benchmark-${{ matrix.dumper }}-${{ matrix.input_type }}
+          name: benchmark-${{ matrix.os }}-${{ matrix.dumper }}-${{ matrix.input_type }}
           path: |
             benchmark_*.json
             benchmark_*.md
@@ -124,15 +191,25 @@ jobs:
         run: |
           echo "# Payload Dumper Performance Comparison" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Comparison across Windows, Linux, and macOS platforms" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
           
-          for dir in results/*/; do
-            echo "## $(basename $dir)" >> $GITHUB_STEP_SUMMARY
+          # Group by OS
+          for os in ubuntu-latest windows-latest macos-latest; do
+            echo "## $(echo $os | sed 's/-latest//' | tr '[:lower:]' '[:upper:]')" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
             
-            if [ -f "$dir"/*.md ]; then
-              cat "$dir"/*.md >> $GITHUB_STEP_SUMMARY
-              echo "" >> $GITHUB_STEP_SUMMARY
-            fi
+            for dir in results/benchmark-${os}-*/; do
+              if [ -d "$dir" ]; then
+                echo "### $(basename $dir)" >> $GITHUB_STEP_SUMMARY
+                echo "" >> $GITHUB_STEP_SUMMARY
+                
+                if [ -f "$dir"/*.md ]; then
+                  cat "$dir"/*.md >> $GITHUB_STEP_SUMMARY
+                  echo "" >> $GITHUB_STEP_SUMMARY
+                fi
+              fi
+            done
           done
 
       - name: Upload combined results
