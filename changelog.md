@@ -1,12 +1,12 @@
 # Changelog
 
-## Version 1.3 (Build 4)
+## Version 1.4 (Build 5)
 
-**Release Date:** 2025-10-22 16:29:03
+**Release Date:** 2025-11-12 09:42:26
 
 **Changes:**
-- Automated release from GitHub Actions workflow run #10
-- Built from commit: d1f6c2206122a590cd0f7f89ac0da590dea94563
+- Automated release from GitHub Actions workflow run #11
+- Built from commit: 19003525a8231ef39825fdde798a2bfde0468ed2
 
 ---
 
