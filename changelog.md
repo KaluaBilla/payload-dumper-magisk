@@ -1,12 +1,12 @@
 # Changelog
 
-## Version 1.4 (Build 5)
+## Version 1.5 (Build 6)
 
-**Release Date:** 2025-11-12 09:42:26
+**Release Date:** 2025-11-12 12:33:34
 
 **Changes:**
-- Automated release from GitHub Actions workflow run #11
-- Built from commit: 19003525a8231ef39825fdde798a2bfde0468ed2
+- Automated release from GitHub Actions workflow run #12
+- Built from commit: 8764ab0787968efafd2386ea5213024ce9c57d76
 
 ---
 
